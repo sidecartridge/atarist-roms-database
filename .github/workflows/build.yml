@@ -1,0 +1,95 @@
+name: Process Pull Request
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install boto3
+
+      - name: Parse Pull Request Description
+        id: parse_pr
+        run: |
+          import os
+          import sys
+          import re
+
+          pr_body = '''${{ github.event.pull_request.body }}'''
+
+          # Define regex patterns to extract required fields
+          filename_pattern = r'Filename:\s*(.*)'
+          name_pattern = r'Name:\s*(.*)'
+          description_pattern = r'Description:\s*(.*)'
+          tags_pattern = r'Tags:\s*(.*)'
+          size_pattern = r'Size:\s*(\d+)'
+
+          # Extract fields
+          filename_match = re.search(filename_pattern, pr_body)
+          name_match = re.search(name_pattern, pr_body)
+          description_match = re.search(description_pattern, pr_body)
+          tags_match = re.search(tags_pattern, pr_body)
+          size_match = re.search(size_pattern, pr_body)
+
+          # Validate and assign variables
+          if filename_match:
+              filename = filename_match.group(1).strip()
+          else:
+              print('Error: Filename not found in PR description.')
+              sys.exit(1)
+
+          if name_match:
+              rom_name = name_match.group(1).strip()
+          else:
+              print('Error: Name not found in PR description.')
+              sys.exit(1)
+
+          if description_match:
+              description = description_match.group(1).strip()
+          else:
+              print('Error: Description not found in PR description.')
+              sys.exit(1)
+
+          if tags_match:
+              tags = tags_match.group(1).strip()
+          else:
+              print('Error: Tags not found in PR description.')
+              sys.exit(1)
+
+          if size_match:
+              size_kb = int(size_match.group(1).strip())
+              if size_kb not in [32, 64, 128]:
+                  print('Error: Size must be 32, 64, or 128.')
+                  sys.exit(1)
+          else:
+              print('Error: Size not found in PR description.')
+              sys.exit(1)
+
+          # Output variables to GitHub Actions
+          print(f'::set-output name=filename::{filename}')
+          print(f'::set-output name=rom_name::{rom_name}')
+          print(f'::set-output name=description::{description}')
+          print(f'::set-output name=tags::{tags}')
+          print(f'::set-output name=size_kb::{size_kb}')
+
+      - name: Display Parsed Data
+        run: |
+          echo "Filename: ${{ steps.parse_pr.outputs.filename }}"
+          echo "Name: ${{ steps.parse_pr.outputs.rom_name }}"
+          echo "Description: ${{ steps.parse_pr.outputs.description }}"
+          echo "Tags: ${{ steps.parse_pr.outputs.tags }}"
+          echo "Size (KB): ${{ steps.parse_pr.outputs.size_kb }}"

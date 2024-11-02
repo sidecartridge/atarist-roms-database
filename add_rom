@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+
+"""
+Example:
+add_rom roms.json "Super Game.bin" "Super Game" "An exciting new game." "arcade,action" 128
+"""
+
+import json
+import argparse
+import urllib.parse
+import os
+import sys
+
+def main():
+    parser = argparse.ArgumentParser(description='Add a new ROM entry to a JSON file.')
+    parser.add_argument('json_file', help='The JSON file to modify.')
+    parser.add_argument('filename', help='The filename of the ROM, including extension.')
+    parser.add_argument('name', help='The name of the ROM.')
+    parser.add_argument('description', help='The description of the ROM.')
+    parser.add_argument('tags', help='A comma-separated list of tags.')
+    parser.add_argument('size_kb', type=int, help='The size of the file in kilobytes (32, 64, or 128).')
+    args = parser.parse_args()
+
+    # Check for empty fields
+    if not args.filename.strip():
+        print("Error: Filename cannot be empty.")
+        sys.exit(1)
+    if not args.name.strip():
+        print("Error: Name cannot be empty.")
+        sys.exit(1)
+    if not args.description.strip():
+        print("Error: Description cannot be empty.")
+        sys.exit(1)
+    if not args.tags.strip():
+        print("Error: Tags cannot be empty.")
+        sys.exit(1)
+
+    # Validate size_kb
+    if args.size_kb not in [32, 64, 128]:
+        print("Error: size_kb must be 32, 64, or 128.")
+        sys.exit(1)
+
+    # Check if JSON file exists
+    if not os.path.isfile(args.json_file):
+        print(f"Error: JSON file '{args.json_file}' does not exist.")
+        sys.exit(1)
+
+    # Load the existing JSON data
+    try:
+        with open(args.json_file, 'r') as f:
+            data = json.load(f)
+    except json.JSONDecodeError:
+        print(f"Error: JSON file '{args.json_file}' is not properly formatted.")
+        sys.exit(1)
+
+    # Check for existing ROM with the same name
+    for entry in data:
+        if entry['name'].lower() == args.name.lower():
+            print(f"Error: A ROM with the name '{args.name}' already exists.")
+            sys.exit(1)
+
+    # Construct the URL based on the filename
+    base_url = 'http://roms.sidecartridge.com/'
+    filename_encoded = urllib.parse.quote(args.filename)
+    url = base_url + filename_encoded
+
+    # Check for existing ROM with the same filename
+    for entry in data:
+        existing_filename = entry['url'].rsplit('/', 1)[-1]
+        if existing_filename.lower() == args.filename.lower():
+            print(f"Error: A ROM with the filename '{args.filename}' already exists.")
+            sys.exit(1)
+
+    # Construct the new entry
+    new_entry = {
+        'url': url,
+        'name': args.name,
+        'description': args.description,
+        'tags': [tag.strip() for tag in args.tags.split(',')],
+        'size_kb': args.size_kb
+    }
+
+    # Append the new entry
+    data.append(new_entry)
+
+    # Sort the data by 'name' key, ignoring case
+    data.sort(key=lambda x: x['name'].lower())
+
+    # Save the updated data back to the JSON file
+    with open(args.json_file, 'w') as f:
+        json.dump(data, f, indent=4)
+
+    print(f"Successfully added '{args.name}' to '{args.json_file}'.")
+
+if __name__ == '__main__':
+    main()
