@@ -118,9 +118,7 @@ jobs:
         run: |
           rm roms.csv
           rm "${{ steps.parse_pr.outputs.filename }}"
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
           git rm "${{ steps.parse_pr.outputs.filename }}"
           git add roms.json
           git commit -m "Add ${{steps.parse_pr.outputs.rom_name}}"
-          git push
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}

@@ -19,6 +19,7 @@ Size: 64 or 128
 ## Submission Guidelines
 
 - **Include the ROM File**:
+  - Please add ONLY one ROM image per pull request.
   - Please include the **binary file** with the ROM image in the **root folder** of the repository in your pull request.
   - The filename must **match exactly** (case-sensitive) the name specified in the **Filename** field above.
 
@@ -26,7 +27,7 @@ Size: 64 or 128
   - Please fill out the **Name**, **Description**, **Tags**, and **Size** fields above. The texts are there as placeholders.
   - The **Name** should be the title of the game, must be unique, and should not contain any special characters. It will be used as the name to sort and index in the database.
   - The **Filename** should be the name of the ROM file. Please match the case exactly.
-  - The **Description** should be a brief summary of the game.
+  - The **Description** should be a brief summary of the program.
   - The **Tags** should be a comma-separated list of keywords.
   - The **Size** should be either `64` or `128`.
 
