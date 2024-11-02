@@ -8,10 +8,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write  # Needed to push changes
     steps:
       - name: Checkout the code
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false  # We'll set up authentication manually
+          fetch-depth: 0
+
+      - name: Set up Git user
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+  
+      - name: Authenticate with GitHub Token
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
 
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
@@ -98,9 +114,12 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
     
       - name: Delete the ROM and remove it from the repository
+        if: success() && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           rm roms.csv
           rm "${{ steps.parse_pr.outputs.filename }}"
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
           git rm "${{ steps.parse_pr.outputs.filename }}"
           git add roms.json
           git commit -m "Add ${{steps.parse_pr.outputs.rom_name}}"
