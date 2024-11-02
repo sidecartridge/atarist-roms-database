@@ -84,19 +84,21 @@ jobs:
 
       - name: Add the ROM to the JSON file 
         run: |
-          ./add_rom roms/roms.json "${{ steps.parse_pr.outputs.filename }}" "${{ steps.parse_pr.outputs.rom_name }}" "${{ steps.parse_pr.outputs.description }}" "${{ steps.parse_pr.outputs.tags }}" ${{ steps.parse_pr.outputs.size_kb }}
+          ./add_rom roms.json "${{ steps.parse_pr.outputs.filename }}" "${{ steps.parse_pr.outputs.rom_name }}" "${{ steps.parse_pr.outputs.description }}" "${{ steps.parse_pr.outputs.tags }}" ${{ steps.parse_pr.outputs.size_kb }}
 
       - name: Update the CSV file
         run: |
-          ./create_roms_csv roms/
+          ./create_roms_csv ./
 
       - name: Upload the ROM and new JSON and CSV files to S3
         run: |
-          ./upload_rom  "${{ steps.parse_pr.outputs.filename }}" --path="roms/"
+          ./upload_rom  "${{ steps.parse_pr.outputs.filename }}" --path=./
 
       - name: Delete the ROM and remove it from the repository
         run: |
+          rm roms.csv
           rm "${{ steps.parse_pr.outputs.filename }}"
-          git add roms/roms.json roms/roms.csv
+          git rm "${{ steps.parse_pr.outputs.filename }}"
+          git add roms.json
           git commit -m "Add ${steps.parse_pr.outputs.rom_name}"
           git push
