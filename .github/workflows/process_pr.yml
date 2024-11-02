@@ -23,68 +23,32 @@ jobs:
           pip install boto3
 
       - name: Parse Pull Request Description
+        uses: actions/github-script@v6
         id: parse_pr
-        run: |
-          import sys
-          import re
-
-          pr_body = '''${{ github.event.pull_request.body }}'''
-
-          # Define regex patterns to extract required fields
-          filename_pattern = r'Filename:\s*(.*)'
-          name_pattern = r'Name:\s*(.*)'
-          description_pattern = r'Description:\s*(.*)'
-          tags_pattern = r'Tags:\s*(.*)'
-          size_pattern = r'Size:\s*(\d+)'
-
-          # Extract fields
-          filename_match = re.search(filename_pattern, pr_body)
-          name_match = re.search(name_pattern, pr_body)
-          description_match = re.search(description_pattern, pr_body)
-          tags_match = re.search(tags_pattern, pr_body)
-          size_match = re.search(size_pattern, pr_body)
-
-          # Validate and assign variables
-          if filename_match:
-              filename = filename_match.group(1).strip()
-          else:
-              print('Error: Filename not found in PR description.')
-              sys.exit(1)
-
-          if name_match:
-              rom_name = name_match.group(1).strip()
-          else:
-              print('Error: Name not found in PR description.')
-              sys.exit(1)
-
-          if description_match:
-              description = description_match.group(1).strip()
-          else:
-              print('Error: Description not found in PR description.')
-              sys.exit(1)
-
-          if tags_match:
-              tags = tags_match.group(1).strip()
-          else:
-              print('Error: Tags not found in PR description.')
-              sys.exit(1)
-
-          if size_match:
-              size_kb = int(size_match.group(1).strip())
-              if size_kb not in [32, 64, 128]:
-                  print('Error: Size must be 32, 64, or 128.')
-                  sys.exit(1)
-          else:
-              print('Error: Size not found in PR description.')
-              sys.exit(1)
-
-          # Output variables to GitHub Actions
-          print(f'::set-output name=filename::{filename}')
-          print(f'::set-output name=rom_name::{rom_name}')
-          print(f'::set-output name=description::{description}')
-          print(f'::set-output name=tags::{tags}')
-          print(f'::set-output name=size_kb::{size_kb}')
-
+        with:
+          script: |
+            const prBody = context.payload.pull_request.body;
+      
+            const filenameMatch = prBody.match(/^Filename:\s*(.+)$/m);
+            const nameMatch = prBody.match(/^Name:\s*(.+)$/m);
+            const descriptionMatch = prBody.match(/^Description:\s*(.+)$/m);
+            const tagsMatch = prBody.match(/^Tags:\s*(.+)$/m);
+            const sizeMatch = prBody.match(/^Size:\s*(\d+)$/m);
+      
+            if (!filenameMatch) throw new Error('Filename not found or invalid in PR description.');
+            if (!nameMatch) throw new Error('Name not found or invalid in PR description.');
+            if (!descriptionMatch) throw new Error('Description not found or invalid in PR description.');
+            if (!tagsMatch) throw new Error('Tags not found or invalid in PR description.');
+            if (!sizeMatch || ![32, 64, 128].includes(parseInt(sizeMatch[1]))) {
+              throw new Error('Size must be 32, 64, or 128.');
+            }
+      
+            core.setOutput('filename', filenameMatch[1].trim());
+            core.setOutput('rom_name', nameMatch[1].trim());
+            core.setOutput('description', descriptionMatch[1].trim());
+            core.setOutput('tags', tagsMatch[1].trim());
+            core.setOutput('size_kb', sizeMatch[1].trim());
+        
       - name: Display Parsed Data
         run: |
           echo "Filename: ${{ steps.parse_pr.outputs.filename }}"
