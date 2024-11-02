@@ -366,6 +366,16 @@
         "size_kb": 64
     },
     {
+        "url": "http://roms.sidecartridge.com/SYSINFO2.STC",
+        "name": "sysinfo test",
+        "description": "A short description of the ROM and what it is about.",
+        "tags": [
+            "test1",
+            "test2"
+        ],
+        "size_kb": 64
+    },
+    {
         "url": "http://roms.sidecartridge.com/TESTROM.BIN",
         "name": "TESTROM Cartridge for Sidecart",
         "description": "A generic test ROM for Atari hardware, used to verify functionality.",
