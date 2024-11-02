@@ -25,7 +25,6 @@ jobs:
       - name: Parse Pull Request Description
         id: parse_pr
         run: |
-          import os
           import sys
           import re
 
