@@ -49,6 +49,24 @@ jobs:
             core.setOutput('tags', tagsMatch[1].trim());
             core.setOutput('size_kb', sizeMatch[1].trim());
         
+      - name: Comment on Pull Request
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.issues.createComment({
+              issue_number: ${{ github.event.pull_request.number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'The pull request description is missing required fields or contains errors. Please ensure all fields are present and correctly formatted.'
+            })
+
+      - name: Stop Job on Failure
+        if: failure()
+        run: |
+          echo "Stopping job due to failure in parsing."
+          exit 1  # This will cause the job to fail and prevent further steps from running
+          
       - name: Display Parsed Data
         run: |
           echo "Filename: ${{ steps.parse_pr.outputs.filename }}"
@@ -56,3 +74,29 @@ jobs:
           echo "Description: ${{ steps.parse_pr.outputs.description }}"
           echo "Tags: ${{ steps.parse_pr.outputs.tags }}"
           echo "Size (KB): ${{ steps.parse_pr.outputs.size_kb }}"
+
+      - name: Check if the ROM file exists in the repository
+        run: |
+          if [ ! -f ${{ steps.parse_pr.outputs.filename }} ]; then
+            echo "The ROM file does not exist in the repository."
+            exit 1
+          fi
+
+      - name: Add the ROM to the JSON file 
+        run: |
+          ./add_rom roms/roms.json "${{ steps.parse_pr.outputs.filename }}" "${{ steps.parse_pr.outputs.rom_name }}" "${{ steps.parse_pr.outputs.description }}" "${{ steps.parse_pr.outputs.tags }}" ${{ steps.parse_pr.outputs.size_kb }}
+
+      - name: Update the CSV file
+        run: |
+          ./create_roms_csv roms/
+
+      - name: Upload the ROM and new JSON and CSV files to S3
+        run: |
+          ./upload_rom  "${{ steps.parse_pr.outputs.filename }}" --path="roms/"
+
+      - name: Delete the ROM and remove it from the repository
+        run: |
+          rm "${{ steps.parse_pr.outputs.filename }}"
+          git add roms/roms.json roms/roms.csv
+          git commit -m "Add ${steps.parse_pr.outputs.rom_name}"
+          git push
