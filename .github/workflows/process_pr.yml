@@ -93,7 +93,10 @@ jobs:
       - name: Upload the ROM and new JSON and CSV files to S3
         run: |
           ./upload_rom  "${{ steps.parse_pr.outputs.filename }}" --path=./
-
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    
       - name: Delete the ROM and remove it from the repository
         run: |
           rm roms.csv
