@@ -18,6 +18,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Git Safe Directory
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+  
+
+
       - name: Set up Git user
         run: |
           git config user.name "GitHub Action"
@@ -35,13 +41,17 @@ jobs:
       - name: Check if Latest Commit is a Merge Commit
         id: check_merge
         run: |
-          PARENT_COUNT=$(git rev-list --count --parents -n 1 HEAD | awk '{print NF-1}')
+          PARENT_COUNT=$(git show -s --format=%P HEAD | wc -w)
           echo "Parent count: $PARENT_COUNT"
           if [ "$PARENT_COUNT" -gt 1 ]; then
             echo "is_merge=true" >> $GITHUB_OUTPUT
           else
             echo "is_merge=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Show HEAD Commit Details
+        run: |
+          git show --no-patch --format=fuller HEAD
 
       - name: Get Associated Pull Request
         if: steps.check_merge.outputs.is_merge == 'true'
@@ -73,10 +83,35 @@ jobs:
         with:
           script: |
             const prBody = steps.get_pr.outputs.pr_body;
+        
             const filenameMatch = prBody.match(/^Filename:\s*(.+)$/m);
+            const nameMatch = prBody.match(/^Name:\s*(.+)$/m);
+            const descriptionMatch = prBody.match(/^Description:\s*(.+)$/m);
+            const tagsMatch = prBody.match(/^Tags:\s*(.+)$/m);
+            const sizeMatch = prBody.match(/^Size:\s*(\d+)$/m);
+        
             if (!filenameMatch) throw new Error('Filename not found or invalid in PR description.');
+            if (!nameMatch) throw new Error('Name not found or invalid in PR description.');
+            if (!descriptionMatch) throw new Error('Description not found or invalid in PR description.');
+            if (!tagsMatch) throw new Error('Tags not found or invalid in PR description.');
+            if (!sizeMatch || ![32, 64, 128].includes(parseInt(sizeMatch[1]))) {
+                throw new Error('Size must be 32, 64, or 128.');
+            }
+        
             core.setOutput('filename', filenameMatch[1].trim());
-
+            core.setOutput('rom_name', nameMatch[1].trim());
+            core.setOutput('description', descriptionMatch[1].trim());
+            core.setOutput('tags', tagsMatch[1].trim());
+            core.setOutput('size_kb', sizeMatch[1].trim());
+    
+      - name: Add the ROM to the JSON file 
+        run: |
+            ./add_rom roms.json "${{ steps.parse_pr.outputs.filename }}" "${{ steps.parse_pr.outputs.rom_name }}" "${{ steps.parse_pr.outputs.description }}" "${{ steps.parse_pr.outputs.tags }}" ${{ steps.parse_pr.outputs.size_kb }}
+    
+      - name: Update the CSV file
+        run: |
+            ./create_roms_csv ./
+    
       - name: Upload the ROM and new JSON and CSV files to S3
         if: steps.get_pr.outputs.pr_number != ''
         run: |
