@@ -62,10 +62,12 @@ jobs:
               core.setOutput('pr_body', pr.body || '');
             } else {
               core.setFailed('No pull request found for this commit.');
+              core.setOutput('pr_number', '');
+              core.setOutput('pr_body', '');
             }
 
       - name: Parse Pull Request Description
-        if: steps.get_pr.outputs.pr_number
+        if: steps.get_pr.outputs.pr_number != ''
         uses: actions/github-script@v6
         id: parse_pr
         with:
@@ -76,7 +78,7 @@ jobs:
             core.setOutput('filename', filenameMatch[1].trim());
 
       - name: Upload the ROM and new JSON and CSV files to S3
-        if: steps.get_pr.outputs.pr_number
+        if: steps.get_pr.outputs.pr_number != ''
         run: |
             ./upload_rom  "${{ steps.parse_pr.outputs.filename }}" --path=./
         env:
@@ -84,7 +86,7 @@ jobs:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       
       - name: Delete the ROM and remove it from the repository
-        if: steps.get_pr.outputs.pr_number
+        if: steps.get_pr.outputs.pr_number != ''
         run: |
             rm roms.csv
             rm "${{ steps.parse_pr.outputs.filename }}"
@@ -94,7 +96,7 @@ jobs:
             git push
   
       - name: Notify Maintainers
-        if: failure()
+        if: failure() && steps.get_pr.outputs.pr_number == ''
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
