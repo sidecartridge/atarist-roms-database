@@ -96,7 +96,7 @@ jobs:
             git push
   
       - name: Notify Maintainers
-        if: steps.get_pr.outputs.pr_number == ''
+        if: failure() && steps.get_pr.outputs.pr_number != ''
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
