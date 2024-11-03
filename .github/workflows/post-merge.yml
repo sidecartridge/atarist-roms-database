@@ -28,6 +28,10 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Install dependencies
+        run: |
+          pip install boto3
+
       - name: Check if Latest Commit is a Merge Commit
         id: check_merge
         run: |
@@ -72,6 +76,7 @@ jobs:
             core.setOutput('filename', filenameMatch[1].trim());
 
       - name: Upload the ROM and new JSON and CSV files to S3
+        if: steps.get_pr.outputs.pr_number
         run: |
             ./upload_rom  "${{ steps.parse_pr.outputs.filename }}" --path=./
         env:
@@ -79,7 +84,7 @@ jobs:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       
       - name: Delete the ROM and remove it from the repository
-        if: steps.parse_pr.outputs.filename
+        if: steps.get_pr.outputs.pr_number
         run: |
             rm roms.csv
             rm "${{ steps.parse_pr.outputs.filename }}"
