@@ -143,9 +143,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const issueNumber = parseInt(inputs.pr_number);
             github.issues.createComment({
-              issue_number: ${{ steps.get_pr.outputs.pr_number }},
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: 'An error occurred while processing your ROM submission. Please check the repository logs for more details.'
-            })
+                  issue_number: issueNumber,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: 'An error occurred while processing your ROM submission. Please check the repository logs for more details.'});
+          inputs:
+            pr_number: ${{ steps.get_pr.outputs.pr_number }}
