@@ -149,5 +149,5 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   body: 'An error occurred while processing your ROM submission. Please check the repository logs for more details.'});
-          inputs:
+           inputs:
             pr_number: ${{ steps.get_pr.outputs.pr_number }}
