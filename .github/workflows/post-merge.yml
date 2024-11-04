@@ -82,7 +82,7 @@ jobs:
         id: parse_pr
         with:
           script: |
-            const prBody = steps.get_pr.outputs.pr_body;
+            const prBody = inputs.pr_body;
         
             const filenameMatch = prBody.match(/^Filename:\s*(.+)$/m);
             const nameMatch = prBody.match(/^Name:\s*(.+)$/m);
@@ -103,12 +103,18 @@ jobs:
             core.setOutput('description', descriptionMatch[1].trim());
             core.setOutput('tags', tagsMatch[1].trim());
             core.setOutput('size_kb', sizeMatch[1].trim());
-    
+
+      - name: Ensure Scripts are Executable
+        run: |
+          chmod +x ./add_rom ./create_roms_csv ./upload_rom
+            
       - name: Add the ROM to the JSON file 
+        if: steps.get_pr.outputs.pr_number != ''
         run: |
             ./add_rom roms.json "${{ steps.parse_pr.outputs.filename }}" "${{ steps.parse_pr.outputs.rom_name }}" "${{ steps.parse_pr.outputs.description }}" "${{ steps.parse_pr.outputs.tags }}" ${{ steps.parse_pr.outputs.size_kb }}
     
       - name: Update the CSV file
+        if: steps.get_pr.outputs.pr_number != ''
         run: |
             ./create_roms_csv ./
     
