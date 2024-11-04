@@ -105,6 +105,7 @@ jobs:
             core.setOutput('size_kb', sizeMatch[1].trim());
 
       - name: Ensure Scripts are Executable
+        if: steps.get_pr.outputs.pr_number != ''
         run: |
           chmod +x ./add_rom ./create_roms_csv ./upload_rom
             
