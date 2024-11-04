@@ -142,7 +142,6 @@ jobs:
             git rm "${{ steps.parse_pr.outputs.filename }}"
             git add roms.json
             git add roms.md
-            git add roms_index.md
             git commit -m "Add ${{steps.parse_pr.outputs.rom_name}}"
             git push
   

@@ -1,12 +1,3 @@
-----
-layout: basic
-title: ROMS list
-permalink: /roms/
-date: 2024-06-01T00:00:00Z
-meta_description: "List of available ROMs for Atari ST computers"
-
----
-
 ## List of ROMs available
 
 You can find the full list in the JSON file [here](http://roms.sidecartridge.com/roms.json).
