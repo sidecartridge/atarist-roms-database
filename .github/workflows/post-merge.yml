@@ -109,7 +109,7 @@ jobs:
       - name: Ensure Scripts are Executable
         if: steps.get_pr.outputs.pr_number != ''
         run: |
-          chmod +x ./add_rom ./create_roms_csv ./upload_rom
+          chmod +x ./add_rom ./create_roms_csv ./upload_rom ./create_roms_md
             
       - name: Add the ROM to the JSON file 
         if: steps.get_pr.outputs.pr_number != ''
@@ -121,6 +121,11 @@ jobs:
         run: |
             ./create_roms_csv ./
     
+      - name: Update the Markdown files
+        if: steps.get_pr.outputs.pr_number != ''
+        run: |
+            ./create_roms_md
+
       - name: Upload the ROM and new JSON and CSV files to S3
         if: steps.get_pr.outputs.pr_number != ''
         run: |
@@ -136,6 +141,8 @@ jobs:
             rm "${{ steps.parse_pr.outputs.filename }}"
             git rm "${{ steps.parse_pr.outputs.filename }}"
             git add roms.json
+            git add roms.md
+            git add roms_index.md
             git commit -m "Add ${{steps.parse_pr.outputs.rom_name}}"
             git push
   
