@@ -447,6 +447,16 @@
         "size_kb": 128
     },
     {
+        "url": "http://roms.sidecartridge.com/YAART_TT.STC",
+        "name": "YAART",
+        "description": "YAART TEST",
+        "tags": [
+            "test",
+            "suffix"
+        ],
+        "size_kb": 64
+    },
+    {
         "url": "http://roms.sidecartridge.com/YAART_ST.STC",
         "name": "Yet Another Atari RAM Test for ST/STE series",
         "description": "Yet Another Atari RAM Test for ST/STE series",
