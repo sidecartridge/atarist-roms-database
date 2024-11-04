@@ -82,7 +82,7 @@ jobs:
         id: parse_pr
         with:
           script: |
-            const prBody = inputs.pr_body;
+            const prBody = process.env.PR_BODY;
         
             const filenameMatch = prBody.match(/^Filename:\s*(.+)$/m);
             const nameMatch = prBody.match(/^Name:\s*(.+)$/m);
@@ -103,6 +103,8 @@ jobs:
             core.setOutput('description', descriptionMatch[1].trim());
             core.setOutput('tags', tagsMatch[1].trim());
             core.setOutput('size_kb', sizeMatch[1].trim());
+        env:
+            PR_BODY: ${{ steps.get_pr.outputs.pr_body }}
 
       - name: Ensure Scripts are Executable
         if: steps.get_pr.outputs.pr_number != ''
