@@ -376,16 +376,6 @@
         "size_kb": 128
     },
     {
-        "url": "http://roms.sidecartridge.com/TT%20Diagnostic%20v1.6.bin",
-        "name": "TT Diagnostic ROM v1.6",
-        "description": "Atari TT Diagnostic ROM v1.6",
-        "tags": [
-            "diagnostic",
-            "sys"
-        ],
-        "size_kb": 128
-    },
-    {
         "url": "http://roms.sidecartridge.com/ULTIBOOT.STC",
         "name": "ULTIBOOT - Disk utilities",
         "description": "A set of disk utilities for Atari ST computers.",
@@ -455,16 +445,6 @@
             "action"
         ],
         "size_kb": 128
-    },
-    {
-        "url": "http://roms.sidecartridge.com/YAART_TT.STC",
-        "name": "YAART",
-        "description": "YAART TEST",
-        "tags": [
-            "test",
-            "suffix"
-        ],
-        "size_kb": 64
     },
     {
         "url": "http://roms.sidecartridge.com/YAART_ST.STC",
